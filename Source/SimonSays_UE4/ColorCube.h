@@ -11,7 +11,8 @@ UENUM(Blueprintable)
 enum TypeOfCube {
 	Red,
 	Blue,
-	Yellow,Green
+	Yellow,
+	Green,
 };
 
 
@@ -24,8 +25,10 @@ public:
 	AColorCube();
 	virtual void Tick(float DeltaTime) override;
 	void SetType(TypeOfCube _type);
+	FORCEINLINE void SetOffType(float _duration) { offTime = _duration; }
 	FORCEINLINE TypeOfCube Type() { return type; }
 	void Blink();
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -39,11 +42,12 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	UMaterialInstanceDynamic* materialInstance;
 	FTimerHandle timerHandle;
-	float blinkDuration = 0.05; // Blink duration as second
+	float offTime =1.f; // Blink duration as second
 	void SetInitialColors();
-	void BlinkLoopAnimation();
-	void BlinkOff();
-	bool bCubeShining = false;
+	
+	UFUNCTION()
+	void BlinkLoopAnimation(float increment, float targetValue);
+	FTimerDelegate blinkAnimationDlgt;
 	float brightnessValue = 0;
 
 

@@ -5,6 +5,13 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
 #include "ColorCube.h"
+#include "CenterCube.h"
+#include "LevelCreator/LevelCreatorBase.h"
+#include "LevelCreator/ArrowBasedLevelCreator.h"
+#include "LevelCreator/ColorBaseLevelCreator.h"
+#include "LevelCreator/TextBasedLevelCreator.h"
+#include "PaperSprite.h"
+
 #include "LevelManager.generated.h"
 
 UCLASS(Blueprintable)
@@ -28,22 +35,28 @@ protected:
 
 private:	
 	TArray<AColorCube*> cubes;
+	TArray<LevelCreatorBase*> levels;
 	UPROPERTY(VisibleAnywhere)
 	TArray<TEnumAsByte<TypeOfCube>> listOfCube;
 	AColorCube* current;
+	ACenterCube* centerCube;
 	UPROPERTY(VisibleAnywhere)
 
 	TArray<TEnumAsByte<TypeOfCube>> listOfPointedCubes;
 	UPROPERTY(VisibleAnywhere)
 
 	TArray<TEnumAsByte<TypeOfCube>> listOfTempCubes;
+	TArray<LevelCreatorBase*> listOfLevel;
+	
 	int score{ 0 };
 	float delayBetweenTurns = 2;
 	float delayBtweenBlinks = 1.5f;
 	FTimerHandle timerHandler;
-	void SelectRandomColor();
-	void CreateNewTurn();
+	int turnCounter = 0;
 	void StartGame();
+	LevelCreatorBase* GetRandomLevel(); // Creates level according to score
+	void CreateNewTurn();
+	void StartTurnAnimation();
 	void EvaulateResult();
 	void GameOver();
 	UPROPERTY(VisibleAnywhere)

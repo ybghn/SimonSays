@@ -19,7 +19,7 @@ AColorCube::AColorCube()
 	if (mat.Object)
 	{
 		material = mat.Object;
-	}
+	} 
 
 	materialInstance = UMaterialInstanceDynamic::Create(material, nullptr);
 
@@ -52,14 +52,8 @@ void AColorCube::SetType(TypeOfCube _type)
 	SetInitialColors();
 }
 
-void AColorCube::Blink()
-{
-	
-	bCubeShining = 1;
-	GetWorldTimerManager().SetTimer(timerHandle, this, &AColorCube::BlinkLoopAnimation, blinkDuration, true);
 
 
-}
 
 void AColorCube::SetInitialColors()
 {
@@ -87,42 +81,54 @@ void AColorCube::SetInitialColors()
 	mesh->SetMaterial(0, materialInstance);
 }
 
-void AColorCube::BlinkLoopAnimation()
+
+void AColorCube::Blink()
 {
 
+	float half = offTime / 2;
+	float target = 10;
+	float increment = 0.5;
+	brightnessValue = 0;
+	float duration = 0.01f;
+	blinkAnimationDlgt.BindUFunction(this, FName("BlinkLoopAnimation"), increment, target);
+	GetWorldTimerManager().SetTimer(timerHandle, blinkAnimationDlgt, duration, true);
+
+}
+
+void AColorCube::BlinkLoopAnimation(float increment,float targetValue)
+{
+	FString msg = "Birghness : " + FString::SanitizeFloat(brightnessValue);
+	GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Red, msg);
 	
-	float increment = 0.8f;
-
+	brightnessValue += increment;
 	
-	if (bCubeShining)
+	if (targetValue == 10)
 	{
-		brightnessValue += increment;
-	}
-	else {
+		if(brightnessValue>targetValue)
+		{
+			brightnessValue = 10;
+			GetWorldTimerManager().ClearTimer(timerHandle);
 
-		brightnessValue -= increment;
-	}
-	if (brightnessValue < 0)
-	{
-		brightnessValue = 0;
-		GetWorldTimerManager().ClearTimer(timerHandle);
+			blinkAnimationDlgt.Unbind();;         // 
+			blinkAnimationDlgt.BindUFunction(this, FName("BlinkLoopAnimation"), -increment, 0.f);
+			GetWorldTimerManager().SetTimer(timerHandle, blinkAnimationDlgt, 0.01f, true);
 
+		}
 	}
-	if (brightnessValue > 10)
+	else if (targetValue == 0)
 	{
-		brightnessValue = 10;
-		GetWorldTimerManager().ClearTimer(timerHandle);
-		BlinkOff();
+		if (brightnessValue<0)
+		{
+			brightnessValue = 0;
+			GetWorldTimerManager().ClearTimer(timerHandle);
+
+		}
 	}
+	
 
 	materialInstance->SetScalarParameterValue("Brightness", brightnessValue);
 	mesh->SetMaterial(0, materialInstance);
 
 }
 
-void AColorCube::BlinkOff()
-{
-	bCubeShining = 0;
-	GetWorldTimerManager().SetTimer(timerHandle, this, &AColorCube::BlinkLoopAnimation, blinkDuration, true);
-}
 

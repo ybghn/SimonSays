@@ -16,19 +16,17 @@ void ALevelManager::BeginPlay()
 {
 	Super::BeginPlay();
 
-	TArray<AActor*> placers;
-	UGameplayStatics::GetAllActorsWithTag(GetWorld(), "Place", placers);
-	if (placers.Num() != 4) return;
-	// Todo : Hata mesajý yazýlabilinir
-	FVector redPos = placers[0]->GetActorLocation();
-	FVector bluePos = placers[1]->GetActorLocation();
-	FVector yellowPos = placers[2]->GetActorLocation();
-	FVector greenPos = placers[3]->GetActorLocation();
+	int coeff = 100;
+	FVector redPos = FVector::ForwardVector * coeff; // forward
+	FVector bluePos = FVector::RightVector * -coeff; // left
+	FVector yellowPos = FVector::ForwardVector * -coeff; // back
+	FVector greenPos = FVector::RightVector * coeff;
+	FVector centerPos = FVector::ZeroVector;
 
 
 	FActorSpawnParameters spawnParams;
 	spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-	
+
 	auto redCube = GetWorld()->SpawnActor<AColorCube>(AColorCube::StaticClass(), redPos, FRotator::ZeroRotator, spawnParams);
 	redCube->SetType(Red);
 	redCube->SetActorLabel("RedCube");
@@ -39,7 +37,7 @@ void ALevelManager::BeginPlay()
 	auto greenCube = GetWorld()->SpawnActor<AColorCube>(AColorCube::StaticClass(), greenPos, FRotator::ZeroRotator, spawnParams);
 	greenCube->SetType(Green);
 
-	auto yellowCube = GetWorld()->SpawnActor<AColorCube>(AColorCube::StaticClass(),yellowPos, FRotator::ZeroRotator, spawnParams);
+	auto yellowCube = GetWorld()->SpawnActor<AColorCube>(AColorCube::StaticClass(), yellowPos, FRotator::ZeroRotator, spawnParams);
 	yellowCube->SetType(Yellow);
 
 
@@ -47,12 +45,16 @@ void ALevelManager::BeginPlay()
 	cubes.Add(yellowCube);
 	cubes.Add(blueCube);;
 	cubes.Add(greenCube);
-		
+
+
+
+	centerCube = GetWorld()->SpawnActor<ACenterCube>(ACenterCube::StaticClass(), centerPos, FRotator::ZeroRotator, spawnParams);
+
 
 	auto playerController = Cast<APlayerController>(GetController());
 	if (!playerController) return;
 	playerController->SetShowMouseCursor(true);
-	
+
 
 }
 
@@ -68,73 +70,108 @@ void ALevelManager::Tick(float DeltaTime)
 void ALevelManager::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
-		
+
 	PlayerInputComponent->BindAction("LeftMouse", EInputEvent::IE_Pressed, this, &ALevelManager::OnLeftMousePressed);
 	PlayerInputComponent->BindAction("StartGame", EInputEvent::IE_Pressed, this, &ALevelManager::StartGame);
 }
 
-void ALevelManager::SelectRandomColor()
-{
 
-	int random = FMath::RandRange(0,3);
-	for (auto c : cubes)
-	{
-		if (c->Type() == (TypeOfCube)random)
-		{
-			current = c;
-		}
-	}
-}
 
 void ALevelManager::CreateNewTurn()
 {
-	
-	
 
-	if (listOfTempCubes.Num() > 0)
+	auto newLevel = GetRandomLevel();
+	GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Emerald, FString::FromInt(newLevel->Type()));
+	levels.Add(newLevel);
+	turnCounter = 0;
+	StartTurnAnimation();
+}
+
+void ALevelManager::StartTurnAnimation()
+{
+	if (turnCounter == levels.Num())
 	{
-		auto last = listOfTempCubes[0];
-		listOfTempCubes.RemoveAt(0);
-	
-		GetWorldTimerManager().SetTimer(timerHandler,this,&ALevelManager::CreateNewTurn, delayBtweenBlinks, false);
-		for (auto c : cubes)
-		{
-			if (c->Type() == last)
-			{
-				c->Blink();
-			}
-		}
 		
-
-	}
-	else {
-		current->Blink();
-		listOfCube.Add(current->Type());
 		bPlayMode = true;
+		turnCounter = 0;
+		return;
 	}
-
-	
+	levels[turnCounter]->Execute();
+	turnCounter++;
+	GetWorldTimerManager().SetTimer(timerHandler, this, &ALevelManager::StartTurnAnimation, delayBetweenTurns, false);
 }
 
 void ALevelManager::StartGame()
 {
 	bPlayMode = false;
-	SelectRandomColor();
-	listOfTempCubes = listOfCube;
+	
 	CreateNewTurn();
 
 }
 
+LevelCreatorBase* ALevelManager::GetRandomLevel()
+{
+	
+
+	if (score < 6)
+	{
+
+		return new ColorBaseLevelCreator(cubes);
+		
+	}
+	else if (score >= 6 && score < 11)
+	{
+		int rand = FMath::RandRange(0, 1);
+		if (rand)
+		{
+
+		return new ColorBaseLevelCreator(cubes);
+			
+		}
+		else {
+
+			return new ArrowBasedLevelCreator(centerCube, cubes);
+		}
+
+
+	}
+	else {
+		int rand = FMath::RandRange(0, 2);
+		if (rand== 0)
+		{
+
+			return new ColorBaseLevelCreator(cubes);
+		
+		}
+		else if(rand ==1) {
+
+			return new ArrowBasedLevelCreator(centerCube, cubes);
+		
+		}
+		else if (rand == 2)
+		{
+
+			return new TextBasedLevelCreator(centerCube, cubes);
+		}
+
+	}
+
+
+	return nullptr;
+}
+
+
+
 void ALevelManager::EvaulateResult()
 {
-	bool result  =  true;
-	for (int i = 0; i < listOfCube.Num(); i++)
+	bool result = true;
+	for (int i = 0; i < levels.Num(); i++)
 	{
-		result = (listOfCube[i] == listOfPointedCubes[i]);
-		if (!result) 
+		result = (levels[i]->Type() == listOfPointedCubes[i]);
+		if (!result)
 		{
 			GameOver();
-			}
+		}
 	}
 	FTimerHandle tempHandler;
 
@@ -168,13 +205,14 @@ void ALevelManager::OnLeftMousePressed()
 	if (!targetActor) return;
 	GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Emerald, targetActor->GetFName().ToString());
 	targetActor->Blink();
+
 	listOfPointedCubes.Add(targetActor->Type());
 
-	if (listOfCube.Num() == listOfPointedCubes.Num())
+	if (levels.Num() == listOfPointedCubes.Num())
 	{
 		EvaulateResult();
 	}
-	if (listOfCube.Num() < listOfPointedCubes.Num())
+	if (levels.Num() < listOfPointedCubes.Num())
 	{
 		GameOver();
 	}
