@@ -28,7 +28,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE int GetScore() { return score; }
 
-
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	bool bPlayMode = false;
 protected:
 
 	virtual void BeginPlay() override;
@@ -36,17 +37,12 @@ protected:
 private:	
 	TArray<AColorCube*> cubes;
 	TArray<LevelCreatorBase*> levels;
-	UPROPERTY(VisibleAnywhere)
-	TArray<TEnumAsByte<TypeOfCube>> listOfCube;
 	AColorCube* current;
 	ACenterCube* centerCube;
-	UPROPERTY(VisibleAnywhere)
 
+	UPROPERTY(VisibleAnywhere)
 	TArray<TEnumAsByte<TypeOfCube>> listOfPointedCubes;
-	UPROPERTY(VisibleAnywhere)
 
-	TArray<TEnumAsByte<TypeOfCube>> listOfTempCubes;
-	TArray<LevelCreatorBase*> listOfLevel;
 	
 	int score{ 0 };
 	float delayBetweenTurns = 2;
@@ -59,9 +55,7 @@ private:
 	void StartTurnAnimation();
 	void EvaulateResult();
 	void GameOver();
-	UPROPERTY(VisibleAnywhere)
-
-	bool bPlayMode = false;
+	
 	//Slots
 	void OnLeftMousePressed();
 };

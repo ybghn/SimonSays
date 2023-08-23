@@ -104,7 +104,9 @@ void ALevelManager::StartTurnAnimation()
 void ALevelManager::StartGame()
 {
 	bPlayMode = false;
-	
+	listOfPointedCubes.Empty();
+	levels.Empty();
+	score = 0;
 	CreateNewTurn();
 
 }
@@ -117,7 +119,7 @@ LevelCreatorBase* ALevelManager::GetRandomLevel()
 	{
 
 		return new ColorBaseLevelCreator(cubes);
-		
+	
 	}
 	else if (score >= 6 && score < 11)
 	{
@@ -164,6 +166,7 @@ LevelCreatorBase* ALevelManager::GetRandomLevel()
 
 void ALevelManager::EvaulateResult()
 {
+	bPlayMode = false;
 	bool result = true;
 	for (int i = 0; i < levels.Num(); i++)
 	{
@@ -171,20 +174,22 @@ void ALevelManager::EvaulateResult()
 		if (!result)
 		{
 			GameOver();
+			return;
 		}
 	}
 	FTimerHandle tempHandler;
 
-	GetWorldTimerManager().SetTimer(tempHandler, this, &ALevelManager::StartGame, delayBetweenTurns, false);
+	GetWorldTimerManager().SetTimer(tempHandler, this, &ALevelManager::CreateNewTurn, delayBetweenTurns, false);
 	listOfPointedCubes.Empty();
 	score++;
 }
 
 void ALevelManager::GameOver()
 {
-	listOfCube.Empty();
+	bPlayMode = false;
+
 	listOfPointedCubes.Empty();
-	listOfTempCubes.Empty();
+	levels.Empty();
 	score = 0;
 
 	GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Red, "GameOver");
@@ -212,7 +217,7 @@ void ALevelManager::OnLeftMousePressed()
 	{
 		EvaulateResult();
 	}
-	if (levels.Num() < listOfPointedCubes.Num())
+	 if (levels.Num() < listOfPointedCubes.Num())
 	{
 		GameOver();
 	}

@@ -6,6 +6,10 @@
 #include "GameFramework/Actor.h"
 #include "Components/StaticMeshComponent.h"
 #include "ColorCube.generated.h"
+#define RedColor FLinearColor(0.776,0.29,0.3)
+#define GreenColor FLinearColor(0.24,0.79,0.27)
+#define BlueColor FLinearColor(0.17,0.63,0.81)
+#define YellowColor FLinearColor(0.78,0.78,0.35)
 
 UENUM(Blueprintable)
 enum TypeOfCube {

@@ -32,7 +32,7 @@ AColorCube::AColorCube()
 void AColorCube::BeginPlay()
 {
 	Super::BeginPlay();
-
+	SetActorScale3D(FVector(0.95, 0.95, 1));
 	
 }
 
@@ -43,7 +43,8 @@ void AColorCube::BeginPlay()
 void AColorCube::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
+	//FString msg = "Birghness : " + FString::SanitizeFloat(brightnessValue);
+	//GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Red, msg);
 }
 
 void AColorCube::SetType(TypeOfCube _type)
@@ -63,19 +64,19 @@ void AColorCube::SetInitialColors()
 	switch (type)
 	{
 	case Red:
-		materialInstance->SetVectorParameterValue("Color", FLinearColor::Red);
+		materialInstance->SetVectorParameterValue("Color", RedColor);
 		break;
 	case Blue:
-		materialInstance->SetVectorParameterValue("Color", FLinearColor::Blue);
+		materialInstance->SetVectorParameterValue("Color", BlueColor);
 		break;
 	case Yellow:
-		materialInstance->SetVectorParameterValue("Color", FLinearColor::Yellow);
+		materialInstance->SetVectorParameterValue("Color", YellowColor);
 		break;
 	case Green:
-		materialInstance->SetVectorParameterValue("Color", FLinearColor::Green);
+		materialInstance->SetVectorParameterValue("Color", GreenColor);
 		break;
 	default:
-		materialInstance->SetVectorParameterValue("Color", FLinearColor::Red);
+		materialInstance->SetVectorParameterValue("Color", RedColor);
 		break;
 	}
 	mesh->SetMaterial(0, materialInstance);
@@ -97,8 +98,7 @@ void AColorCube::Blink()
 
 void AColorCube::BlinkLoopAnimation(float increment,float targetValue)
 {
-	FString msg = "Birghness : " + FString::SanitizeFloat(brightnessValue);
-	GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Red, msg);
+
 	
 	brightnessValue += increment;
 	

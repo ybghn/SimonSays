@@ -40,7 +40,7 @@ ACenterCube::ACenterCube()
 
 
 	UMaterialInstanceDynamic* instanceMat = UMaterialInstanceDynamic::Create(material, nullptr);
-	instanceMat->SetVectorParameterValue("Color", FLinearColor::Gray);
+	instanceMat->SetVectorParameterValue("Color", FLinearColor::Black);
 	mesh->SetMaterial(0, instanceMat);
 
 	int coeff = 51;
@@ -81,8 +81,10 @@ ACenterCube::ACenterCube()
 	text = CreateDefaultSubobject<UTextRenderComponent>("CenterText");
 	text->AttachToComponent(mesh, FAttachmentTransformRules::KeepWorldTransform);
 	text->SetRelativeLocation(FVector(0, 0, 2 * coeff));
-	text->SetRelativeRotation(FRotator::MakeFromEuler(FVector(-45, 90, 0)));
+	text->SetRelativeRotation(FRotator::MakeFromEuler(FVector(225, 90, 0)));
 	text->SetText("");
+	text->SetHorizontalAlignment(EHorizTextAligment::EHTA_Center);
+	text->SetVerticalAlignment(EVerticalTextAligment::EVRTA_TextCenter);
 
 
 }
@@ -91,7 +93,9 @@ ACenterCube::ACenterCube()
 void ACenterCube::BeginPlay()
 {
 	Super::BeginPlay();
+	SetActorScale3D(FVector(0.95, 0.95, 1));
 
+	SetOffEveryThing();
 }
 
 // Called every frame

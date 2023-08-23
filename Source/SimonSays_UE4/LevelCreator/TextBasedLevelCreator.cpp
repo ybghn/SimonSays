@@ -21,16 +21,16 @@ void TextBasedLevelCreator::Execute()
 	switch (Type())
 	{
 	case Red:
-		text = "Kýrmýzý";
+		text = "Red";
 		break;
 	case Blue :
-		text = "Mavi";
+		text = "Blue";
 		break;
 	case Green:
-		text = "Yeþil";
+		text = "Green";
 			break;
 	case Yellow:
-		text = "Sarý";
+		text = "Yellow";
 		break;
 	default:
 		break;
@@ -54,16 +54,16 @@ FColor TextBasedLevelCreator::GetFakeColor()
 	switch (type)
 	{
 	case Red:
-		tempColor = FColor::Red;
+		tempColor = RedColor.ToFColor(true);
 		break;
 	case Blue:
-		tempColor = FColor::Blue;
+		tempColor = BlueColor.ToFColor(1);
 		break;
 	case Yellow:
-		tempColor = FColor::Yellow;
+		tempColor = YellowColor.ToFColor(1);
 		break;
 	case Green:
-		tempColor = FColor::Green;
+		tempColor = GreenColor.ToFColor(1);
 		break;
 	default:
 		tempColor = FColor::Black; //
